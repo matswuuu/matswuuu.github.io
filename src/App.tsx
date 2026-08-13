@@ -72,9 +72,10 @@ function App() {
         }
     })
 
-    const [activeTool, setActiveTool] = useState<Tool>(tools.get('selector')!);
+    const [activeToolType, setActiveToolType] = useState<ToolType>('selector');
+    const activeTool = tools.get(activeToolType)!;
     const updateActiveTool = (tool: ToolType) => {
-        setActiveTool(tools.get(tool)!);
+        setActiveToolType(tool);
     }
 
     const [selectedScheme, setSelectedScheme] = useState<Scheme | null>(null);
@@ -127,9 +128,16 @@ function App() {
     }, [structures, cellIndex, setAllBlocks]);
 
     useHotkeys('ctrl+r', () => setCurrentRotation((currentRotation + 90) % 360 as Rotation));
-    useHotkeys('ctrl+z', () => undo());
-    useHotkeys('ctrl+y', () => redo());
-    useHotkeys(['delete', 'backspace'], () => {
+    useHotkeys('ctrl+z', (e) => {
+        if (e.target instanceof HTMLInputElement) return;
+        undo()
+    });
+    useHotkeys('ctrl+y', (e) => {
+        if (e.target instanceof HTMLInputElement) return;
+        redo()
+    });
+    useHotkeys(['delete', 'backspace'], (e) => {
+        if (e.target instanceof HTMLInputElement) return;
         if (selectedStructure.length > 0) {
             handleStructureRemove(selectedStructure[0].pos)
             setSelectedStructure([])
@@ -196,7 +204,7 @@ function App() {
             data: {
                 schemeData: {
                     name: "test",
-                    path: "classpath:///config/rooms/test-scheme.json",
+                    path: "classpath:///config/rooms/junglex-complex/scheme.json",
                     previewImagePath: "https://storage.c7x.dev/matswuuu/scp/v0.0.1/resources/textures/map/test-map-preview.png"
                 },
             },
@@ -302,27 +310,8 @@ function App() {
                 <MetadataEditor
                     structure={metadataEditor.structure}
                     metadata={metadataEditor.metadata}
-                    onChange={(structure, key, value) => {
-                        structure.metadata.set(key, value);
-
-                        setAllBlocks(structures.map(b => {
-                            if (b === metadataEditor.structure) {
-                                const newMetadata = new Map(b.metadata || []);
-                                newMetadata.set(key, value);
-                                return {...b, metadata: newMetadata};
-                            }
-                            return b;
-                        }));
-                        setMetadataEditor(prev => prev && ({
-                            ...prev,
-                            structure: {
-                                ...prev.structure,
-                                metadata: new Map([
-                                    ...(prev.structure.metadata || []),
-                                    [key, value]
-                                ])
-                            }
-                        }));
+                    onChange={(structure, newMetadata) => {
+                        setAllBlocks(structures.map(b => (b === structure ? {...structure, metadata: newMetadata} : b)));
                     }}
                     onClose={() => setMetadataEditor(null)}
                 />
