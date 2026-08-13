@@ -204,7 +204,7 @@ function App() {
             data: {
                 schemeData: {
                     name: "test",
-                    path: "classpath:///config/rooms/junglex-complex/scheme.json",
+                    path: "classpath:///config/rooms/jungled-complex/scheme.json",
                     previewImagePath: "https://storage.c7x.dev/matswuuu/scp/v0.0.1/resources/textures/map/test-map-preview.png"
                 },
             },
