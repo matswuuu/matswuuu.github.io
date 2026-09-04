@@ -1,6 +1,6 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {Pos} from "../../utils/pos.ts";
-import {canPlaceStructure, forEachVisibleCell, getPreparedCells, rotateBlock} from "../../utils/structure-utils.ts";
+import {canPlaceStructure, cellKey, forEachVisibleCell, getPreparedCells, rotateBlock} from "../../utils/structure-utils.ts";
 import {GridRenderer} from "./GridRenderer.ts";
 import type {Camera} from "../../utils/camera.ts";
 import type {Tool} from "../toolbar/Tool.ts";
@@ -41,6 +41,8 @@ const InfinitiveGrid: React.FC<InfiniteGridProps> = ({
 
     const cameraRef = useRef<Camera>({x: 0, y: 0, zoom: 1});
     const hoverCellRef = useRef<Pos | null>(null);
+
+    const [hoveredStructure, setHoveredStructure] = useState<{ schemeId: string; x: number; y: number } | null>(null);
 
     const isDragging = useRef(false);
     const dragStart = useRef({x: 0, y: 0});
@@ -303,6 +305,7 @@ const InfinitiveGrid: React.FC<InfiniteGridProps> = ({
                 y: offsetStart.current.y + dy,
                 zoom: camera.zoom,
             };
+            setHoveredStructure(null);
             scheduleFrame();
         } else {
             const cell = getGridCell(e.clientX, e.clientY);
@@ -311,6 +314,13 @@ const InfinitiveGrid: React.FC<InfiniteGridProps> = ({
                 hoverCellRef.current = cell;
                 scheduleFrame();
             }
+
+            const hovered = cellIndex.get(cellKey(cell.x, cell.z))?.[0];
+            if (hovered) {
+                setHoveredStructure({schemeId: hovered.schemeId, x: e.clientX, y: e.clientY});
+            } else {
+                setHoveredStructure(null);
+            }
         }
     };
 
@@ -318,16 +328,31 @@ const InfinitiveGrid: React.FC<InfiniteGridProps> = ({
         isDragging.current = false;
     };
 
+    const handleMouseLeave = () => {
+        isDragging.current = false;
+        setHoveredStructure(null);
+    };
+
     return (
-        <canvas
-            ref={canvasRef}
-            className={"grid"}
-            onWheel={handleWheel}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-        />
+        <>
+            <canvas
+                ref={canvasRef}
+                className={"grid"}
+                onWheel={handleWheel}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
+            />
+            {hoveredStructure && (
+                <div
+                    className="structure-tooltip"
+                    style={{left: hoveredStructure.x + 14, top: hoveredStructure.y + 14}}
+                >
+                    {hoveredStructure.schemeId}
+                </div>
+            )}
+        </>
     );
 };
 

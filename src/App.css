@@ -356,3 +356,19 @@ body {
 .app-overlay button:hover {
     background-color: #1976d2;
 }
+
+.structure-tooltip {
+    position: fixed;
+    pointer-events: none;
+    z-index: 500;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
