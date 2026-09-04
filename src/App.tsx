@@ -174,14 +174,27 @@ function App() {
                             throw new Error(
                                 'Each block must have either a coords array or explicit x, y, z fields.');
                         }
+                        const scheme = schemeById.get(b.schemeId);
+                        const metadata = new Map<string, object>();
+                        if (b.metadata && typeof b.metadata === 'object') {
+                            for (const [key, value] of Object.entries(b.metadata as Record<string, object>)) {
+                                metadata.set(key, value);
+                            }
+                        }
+                        for (const key of (scheme?.metadata ?? new Map<string, any>()).keys()) {
+                            if (b[key] !== undefined) {
+                                metadata.set(key, b[key]);
+                            }
+                        }
                         return {
                             ...b,
-                            type: schemeById.get(b.schemeId)?.type ?? b.type,
+                            type: scheme?.type ?? b.type,
                             pos: {
                                 x: x,
                                 y: y,
                                 z: z,
-                            }
+                            },
+                            metadata,
                         };
                     }));
                 } else {
